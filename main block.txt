@@ -1,0 +1,77 @@
+set serverout on size 1000000 ;
+declare
+----------------------------------------------------------------------
+-- to select all the data from conctracts table 
+cursor contract is 
+select * from contracts ;
+----------------------------------------------------------------------
+--this variable will be the return of the function ' calc_payment_num'
+  v_num_of_payments number(6);
+---------------------------------------------------------------------- 
+v_con_id number(8);
+ v_start_date date ;  v_end_date date ;
+  v_type varchar2(90);
+  
+  v_total_fees number(10,2);
+    v_deposit_fees number(10,2);
+    v_pure_fees number(10,2) ;
+    v_every_fee number(10,2) ;
+
+
+begin   
+
+for cont_record in contract
+loop
+ ------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ --select the values of start date and end date and pay type to send to v_num_of_months function to calculate the num of payments
+ v_start_date:=cont_record.CONTRACT_STARTDATE ;
+ v_end_date:=cont_record.CONTRACT_ENDDATE  ;
+ v_type:=cont_record.CONTRACT_PAYMENT_TYPE;
+v_con_id:= cont_record.CONTRACT_ID  ;
+
+v_total_fees:=cont_record.CONTRACT_TOTAL_FEES ;
+v_deposit_fees:=cont_record.CONTRACT_DEPOSIT_FEES ;
+
+v_pure_fees := v_total_fees - coalesce(v_deposit_fees,0) ;
+
+ 
+
+    
+ v_num_of_payments := calc_payment_num( v_start_date , v_end_date ,v_type )  ;
+ 
+ v_every_fee := v_pure_fees/v_num_of_payments ;
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+update_pay_num(v_num_of_payments,v_con_id);
+--------------------------------------------------------------------
+
+for i in 1 .. v_num_of_payments
+loop
+
+insert_installments_procedure
+                    ( v_con_id ,  v_start_date , v_every_fee ) ;
+                   
+ if v_type='annual'
+   then v_start_date := add_months( v_start_date , 12 ) ;
+   
+   elsif  v_type='half_annual'
+   then v_start_date := add_months( v_start_date , 6 ) ;
+   
+    elsif  v_type='quarter'
+   then v_start_date := add_months( v_start_date , 3 ) ;
+   
+    else   v_start_date := add_months( v_start_date , 1 ) ;
+    end if ; 
+
+
+
+
+
+
+end loop ;
+
+------------------------------------------------------------------------------------
+
+
+end loop ;
+
+end ;

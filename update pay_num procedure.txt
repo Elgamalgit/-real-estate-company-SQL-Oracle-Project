@@ -1,0 +1,11 @@
+CREATE OR REPLACE PROCEDURE update_pay_num
+                    (v_pay_num number , v_con_id number)
+IS
+
+BEGIN
+  
+      
+        update contracts
+         set PAYMENT_INSTALLMENTS_NO = v_pay_num
+          where CONTRACT_ID = v_con_id;    
+END;

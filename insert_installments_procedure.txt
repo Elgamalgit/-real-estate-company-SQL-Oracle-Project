@@ -1,0 +1,15 @@
+CREATE OR REPLACE PROCEDURE insert_installments_procedure
+                    ( v_con_id number , installment_date date , installment_amount number )
+IS
+
+v_paid number(1) :=0 ;
+
+
+BEGIN
+  
+      insert into installments_paid 
+      (CONTRACT_ID, INSTALLMENT_AMOUNT, INSTALLMENT_DATE, INSTALLMENT_ID, PAID )
+      values
+     (  v_con_id ,  installment_amount , installment_date  ,seq22.nextval , v_paid )  ;
+       
+END;
